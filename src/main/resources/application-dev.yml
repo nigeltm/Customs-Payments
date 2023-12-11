@@ -1,0 +1,20 @@
+server:
+  port: 8082
+spring:
+  datasource:
+    password: postgres
+    url: jdbc:postgresql://localhost:5432/customs_payments
+    username: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.PostgresSQLDialect
+          format_sql: true
+
+        show-sql: false
+
+application:
+  title: Customs Payments Monitoring Application
+  version: 1.0
