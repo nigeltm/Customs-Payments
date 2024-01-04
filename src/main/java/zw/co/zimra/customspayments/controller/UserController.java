@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import zw.co.zimra.customspayments.dto.HttpResponse;
+import zw.co.zimra.customspayments.dto.LoginRequest;
+import zw.co.zimra.customspayments.dto.LoginResponse;
 import zw.co.zimra.customspayments.model.User;
 import zw.co.zimra.customspayments.service.UserService;
 
@@ -18,11 +20,31 @@ import static java.time.LocalDateTime.now;
 @RestController
 @RequestMapping("api/v1/users")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
-
 public class UserController {
 
     private final UserService userService;
+
+
+    @PostMapping("/login")
+    public ResponseEntity<HttpResponse> login(@RequestBody  @Valid LoginRequest loginRequest){
+        LoginResponse response = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
+        HttpResponse httpResponse = new HttpResponse();
+        httpResponse.setTimeStamp(now().toString());
+        if(response.isAuthenticated()){
+            httpResponse.setData(Map.of("user", response));
+            httpResponse.setMessage("Login successful for "+ loginRequest.getUsername());
+            httpResponse.setStatus(HttpStatus.OK);
+            httpResponse.setStatusCode(HttpStatus.OK.value());
+            return ResponseEntity.ok().body(httpResponse);
+        }else{
+            httpResponse.setData(Map.of("user", response));
+            httpResponse.setMessage("Login failed for "+ loginRequest.getUsername());
+            httpResponse.setStatus(HttpStatus.BAD_REQUEST);
+            httpResponse.setStatusCode(HttpStatus.BAD_REQUEST.value());
+            return ResponseEntity.badRequest().body(httpResponse);
+        }
+
+    }
 
     @PostMapping("")
     public ResponseEntity<HttpResponse> saveUser(@RequestBody @Valid User user){

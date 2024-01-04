@@ -9,6 +9,7 @@ import com.google.gson.JsonSyntaxException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import zw.co.zimra.customspayments.dto.ArchivedTransaction;
 import zw.co.zimra.customspayments.dto.Transaction;
 import zw.co.zimra.customspayments.service.TransactionService;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -18,6 +19,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,6 +59,48 @@ public class TransactionServiceImpl implements TransactionService {
                             transactions.addAll(transactionList);
                         }
                     return transactions;
+                    }catch(JsonSyntaxException exception){
+                        log.error(exception.getMessage());
+                    }
+                }else {
+                    log.error("Request failed with status code: " + statusCode);
+                    throw new RuntimeException("Request failed with status code "+statusCode);
+                }
+            }
+        } catch (IOException | InterruptedException exception) {
+            log.error(exception.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public List<ArchivedTransaction> getArchivedTransactions(String dateFrom, String dateTo) {
+        LocalDateTime from = LocalDateTime.parse(dateFrom);
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(CUSTOMS_TRANSACTIONS_URL+"/archived?dateFrom="+dateFrom+"&dateTo="+dateTo))
+                .build();
+
+        try {
+            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            int statusCode = response.statusCode();
+            String responseBody = response.body();
+            List<ArchivedTransaction> transactions = new ArrayList<>();
+
+            if(statusCode==200){
+                if(responseBody!=null){
+                    try{
+                        zw.co.zimra.customspayments.dto.HttpResponse httpResponse
+                                = gson.fromJson(responseBody,zw.co.zimra.customspayments.dto.HttpResponse.class);
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        objectMapper.registerModule(new JavaTimeModule());
+
+                        String jsonString  = objectMapper.writeValueAsString(httpResponse.getData().get("transactions"));
+                        JsonFactory jsonFactory = new JsonFactory();
+                        try (JsonParser jsonParser = jsonFactory.createParser(jsonString)) {
+                            List<ArchivedTransaction> transactionList = objectMapper.readValue(jsonParser, new TypeReference<List<ArchivedTransaction>>() {});
+                            transactions.addAll(transactionList);
+                        }
+                        return transactions;
                     }catch(JsonSyntaxException exception){
                         log.error(exception.getMessage());
                     }
