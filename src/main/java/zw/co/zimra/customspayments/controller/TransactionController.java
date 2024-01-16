@@ -42,25 +42,6 @@ public class TransactionController {
         return ResponseEntity.ok().body(httpResponse);
     }
 
-
-    @GetMapping("/archived")
-    public ResponseEntity<HttpResponse> getArchivedTransactions(@RequestParam LocalDateTime dateFrom,
-                                                                @RequestParam LocalDateTime dateTo,
-                                                                @RequestParam Optional<Integer> page,
-                                                                @RequestParam Optional<Integer> size){
-        PageContent transactions = transactionService.getArchivedTransactions(dateFrom,
-                dateTo,
-                page.orElse(0),
-                size.orElse(10));
-        HttpResponse httpResponse = new HttpResponse();
-        httpResponse.setTimeStamp(now().toString());
-        httpResponse.setData(Map.of("page",transactions));
-       // httpResponse.setMessage(transactions.size() + " transactions retrieved.");
-        httpResponse.setStatus(HttpStatus.OK);
-        httpResponse.setStatusCode(HttpStatus.OK.value());
-        return ResponseEntity.ok().body(httpResponse);
-    }
-
     @GetMapping("/cbz")
     public ResponseEntity<HttpResponse> getArchivedCBZTransactions(@PathParam("dateFrom") String dateFrom, @PathParam("dateTo") String dateTo){
         List<ArchivedTransaction> transactions = transactionService.getArchivedCBZTransactions(dateFrom, dateTo);
