@@ -9,4 +9,6 @@ public interface TransactionService {
     public List<Transaction> getTransactions();
 
     List<ArchivedTransaction> getArchivedTransactions(String dateFrom, String dateTo);
+
+    List<ArchivedTransaction> getArchivedCBZTransactions(String dateFrom, String dateTo);
 }

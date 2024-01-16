@@ -50,6 +50,18 @@ public class TransactionController {
         httpResponse.setStatusCode(HttpStatus.OK.value());
         return ResponseEntity.ok().body(httpResponse);
     }
+
+    @GetMapping("/cbz")
+    public ResponseEntity<HttpResponse> getArchivedCBZTransactions(@PathParam("dateFrom") String dateFrom, @PathParam("dateTo") String dateTo){
+        List<ArchivedTransaction> transactions = transactionService.getArchivedCBZTransactions(dateFrom, dateTo);
+        HttpResponse httpResponse = new HttpResponse();
+        httpResponse.setTimeStamp(now().toString());
+        httpResponse.setData(Map.of("transactions",transactions));
+        httpResponse.setMessage(transactions.size() + " transactions retrieved.");
+        httpResponse.setStatus(HttpStatus.OK);
+        httpResponse.setStatusCode(HttpStatus.OK.value());
+        return ResponseEntity.ok().body(httpResponse);
+    }
     private URI getUri() {
         return URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/v1/users").toUriString());
     }
